@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -121,31 +121,24 @@ If t, don't limit."
 (defvar highlight-blocks--timer nil)
 (make-variable-buffer-local 'highlight-blocks--timer)
 
-(defvar highlight-blocks--used-overlays nil)
-(make-variable-buffer-local 'highlight-blocks--used-overlays)
-(defvar highlight-blocks--unused-overlays nil)
-(make-variable-buffer-local 'highlight-blocks--unused-overlays)
+(defvar highlight-blocks--overlays nil)
+(make-variable-buffer-local 'highlight-blocks--overlays)
 
-;; Overlay creation is pretty costly compared to setting their
-;; attributes, hence the following ordeal.
-
-(defun highlight-blocks--free-overlays ()
+(defun highlight-blocks--delete-overlays ()
   "Delete all used overlays."
-  (dolist (overlay highlight-blocks--used-overlays)
+  (dolist (overlay highlight-blocks--overlays)
     (delete-overlay overlay))
-  (setq highlight-blocks--unused-overlays
-        (nconc highlight-blocks--used-overlays highlight-blocks--unused-overlays))
-  (setq highlight-blocks--used-overlays nil))
+  (setq highlight-blocks--overlays nil))
 
-(defun highlight-blocks--get-overlay ()
-  "Get a new overlay.
+(defun highlight-blocks--make-overlay (depth beg end)
+  "Make a new overlay.
 
-The returned overlay may or may not belong to a buffer."
-  (let ((result (if (null highlight-blocks--unused-overlays)
-                    (make-overlay 0 0)
-                  (pop highlight-blocks--unused-overlays))))
-    (push result highlight-blocks--used-overlays)
-    result))
+DEPTH controls the face and priority, BEG and END are the positions in
+buffer."
+  (let ((overlay (make-overlay beg end)))
+    (overlay-put overlay 'priority depth)
+    (overlay-put overlay 'face (highlight-blocks--get-face depth))
+    (push overlay highlight-blocks--overlays)))
 
 (defun highlight-blocks--get-face (depth)
   "Get the face corresponding to the (1-based) DEPTH."
@@ -200,20 +193,16 @@ block."
 (defun highlight-blocks--fn ()
   "The main worker function of `highlight-blocks-mode'."
   (when highlight-blocks-mode
-    (highlight-blocks--free-overlays)
+    (highlight-blocks--delete-overlays)
     (let ((i 1))
       (dolist (bounds (highlight-blocks--get-bounds))
-        (let ((overlay (highlight-blocks--get-overlay)))
-          (overlay-put overlay 'priority i)
-          (overlay-put overlay 'face (highlight-blocks--get-face i))
-          (move-overlay overlay (car bounds) (cdr bounds)))
+        (highlight-blocks--make-overlay i (car bounds) (cdr bounds))
         (setq i (1+ i))))))
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
   (add-hook 'change-major-mode-hook 'highlight-blocks--mode-off nil t)
-  (setq highlight-blocks--used-overlays nil)
-  (setq highlight-blocks--unused-overlays nil)
+  (setq highlight-blocks--overlays nil)
   (setq highlight-blocks--timer (run-with-idle-timer
                                  highlight-blocks-delay t 'highlight-blocks--fn)))
 
@@ -223,9 +212,8 @@ block."
   (when highlight-blocks--timer
     (cancel-timer highlight-blocks--timer)
     (setq highlight-blocks--timer nil))
-  (highlight-blocks--free-overlays)
-  (setq highlight-blocks--used-overlays nil)
-  (setq highlight-blocks--unused-overlays nil))
+  (highlight-blocks--delete-overlays)
+  (setq highlight-blocks--overlays nil))
 
 ;;;###autoload
 (define-minor-mode highlight-blocks-mode
