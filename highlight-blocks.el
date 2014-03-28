@@ -45,7 +45,7 @@
 (defcustom highlight-blocks-delay 0.1
   "Time in seconds to delay before highlighting blocks.
 If you change this while `highlight-blocks-mode' is active, you must
-toggle the mode off and on again for it to take an effect."
+toggle the mode off and on again for it to take effect."
   :type '(number :tag "seconds")
   :group 'highlight-blocks)
 
@@ -212,8 +212,7 @@ block."
   (when highlight-blocks--timer
     (cancel-timer highlight-blocks--timer)
     (setq highlight-blocks--timer nil))
-  (highlight-blocks--delete-overlays)
-  (setq highlight-blocks--overlays nil))
+  (highlight-blocks--delete-overlays))
 
 ;;;###autoload
 (define-minor-mode highlight-blocks-mode
