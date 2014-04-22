@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -202,6 +202,7 @@ block."
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
   (add-hook 'change-major-mode-hook 'highlight-blocks--mode-off nil t)
+  (add-hook 'kill-buffer-hook 'highlight-blocks--mode-off nil t)
   (setq highlight-blocks--overlays nil)
   (setq highlight-blocks--timer (run-with-idle-timer
                                  highlight-blocks-delay t 'highlight-blocks--fn)))
@@ -209,6 +210,7 @@ block."
 (defun highlight-blocks--mode-off ()
   "Turn off `highlight-blocks-mode'."
   (remove-hook 'change-major-mode-hook 'highlight-blocks--mode-off t)
+  (remove-hook 'kill-buffer-hook 'highlight-blocks--mode-off t)
   (when highlight-blocks--timer
     (cancel-timer highlight-blocks--timer)
     (setq highlight-blocks--timer nil))
