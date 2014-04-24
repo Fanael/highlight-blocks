@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -121,24 +121,25 @@ If t, don't limit."
 (defvar highlight-blocks--timer nil)
 (make-variable-buffer-local 'highlight-blocks--timer)
 
-(defvar highlight-blocks--overlays nil)
-(make-variable-buffer-local 'highlight-blocks--overlays)
+(defun highlight-blocks--delete-window-overlays (window)
+  "Delete all used overlays in the WINDOW."
+  (mapc 'delete-overlay (window-parameter window 'highlight-blocks--overlays))
+  (set-window-parameter window 'highlight-blocks--overlays nil))
 
 (defun highlight-blocks--delete-overlays ()
-  "Delete all used overlays."
-  (dolist (overlay highlight-blocks--overlays)
-    (delete-overlay overlay))
-  (setq highlight-blocks--overlays nil))
+  "Delete all used overlays in all windows showing the current buffer."
+  (mapc 'highlight-blocks--delete-window-overlays (get-buffer-window-list nil nil t)))
 
-(defun highlight-blocks--make-overlay (depth beg end)
+(defun highlight-blocks--make-overlay (depth beg end window)
   "Make a new overlay.
 
 DEPTH controls the face and priority, BEG and END are the positions in
-buffer."
+buffer, WINDOW is the window to show the overlay in."
   (let ((overlay (make-overlay beg end)))
+    (overlay-put overlay 'window window)
     (overlay-put overlay 'priority depth)
     (overlay-put overlay 'face (highlight-blocks--get-face depth))
-    (push overlay highlight-blocks--overlays)))
+    (push overlay (window-parameter nil 'highlight-blocks--overlays))))
 
 (defun highlight-blocks--get-face (depth)
   "Get the face corresponding to the (1-based) DEPTH."
@@ -193,17 +194,17 @@ block."
 (defun highlight-blocks--fn ()
   "The main worker function of `highlight-blocks-mode'."
   (when highlight-blocks-mode
-    (highlight-blocks--delete-overlays)
-    (let ((i 1))
-      (dolist (bounds (highlight-blocks--get-bounds))
-        (highlight-blocks--make-overlay i (car bounds) (cdr bounds))
-        (setq i (1+ i))))))
+    (let ((window (selected-window)))
+      (highlight-blocks--delete-window-overlays window)
+      (let ((i 1))
+        (dolist (bounds (highlight-blocks--get-bounds))
+          (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
+          (setq i (1+ i)))))))
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
   (add-hook 'change-major-mode-hook 'highlight-blocks--mode-off nil t)
   (add-hook 'kill-buffer-hook 'highlight-blocks--mode-off nil t)
-  (setq highlight-blocks--overlays nil)
   (setq highlight-blocks--timer (run-with-idle-timer
                                  highlight-blocks-delay t 'highlight-blocks--fn)))
 
