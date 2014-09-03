@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -65,56 +65,56 @@ If t, don't limit."
   :group 'faces)
 
 (defface highlight-blocks-depth-1-face
-  '((((class color) (background dark)) :background "gray20")
-    (((class color) (background light)) :background "gray80"))
+  '((((class color) (background dark)) :background "gray10")
+    (((class color) (background light)) :background "gray90"))
   "Current nested block face, depth 1."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-2-face
-  '((((class color) (background dark)) :background "gray23")
-    (((class color) (background light)) :background "gray77"))
+  '((((class color) (background dark)) :background "gray13")
+    (((class color) (background light)) :background "gray87"))
   "Current nested block face, depth 2."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-3-face
-  '((((class color) (background dark)) :background "gray26")
-    (((class color) (background light)) :background "gray74"))
+  '((((class color) (background dark)) :background "gray16")
+    (((class color) (background light)) :background "gray84"))
   "Current nested block face, depth 3."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-4-face
-  '((((class color) (background dark)) :background "gray29")
-    (((class color) (background light)) :background "gray71"))
+  '((((class color) (background dark)) :background "gray19")
+    (((class color) (background light)) :background "gray81"))
   "Current nested block face, depth 4."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-5-face
-  '((((class color) (background dark)) :background "gray32")
-    (((class color) (background light)) :background "gray68"))
+  '((((class color) (background dark)) :background "gray22")
+    (((class color) (background light)) :background "gray78"))
   "Current nested block face, depth 5."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-6-face
-  '((((class color) (background dark)) :background "gray35")
-    (((class color) (background light)) :background "gray65"))
+  '((((class color) (background dark)) :background "gray25")
+    (((class color) (background light)) :background "gray75"))
   "Current nested block face, depth 6."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-7-face
-  '((((class color) (background dark)) :background "gray38")
-    (((class color) (background light)) :background "gray62"))
+  '((((class color) (background dark)) :background "gray28")
+    (((class color) (background light)) :background "gray72"))
   "Current nested block face, depth 7."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-8-face
-  '((((class color) (background dark)) :background "gray41")
-    (((class color) (background light)) :background "gray59"))
+  '((((class color) (background dark)) :background "gray31")
+    (((class color) (background light)) :background "gray69"))
   "Current nested block face, depth 8."
   :group 'highlight-blocks-faces)
 
 (defface highlight-blocks-depth-9-face
-  '((((class color) (background dark)) :background "gray44")
-    (((class color) (background light)) :background "gray56"))
+  '((((class color) (background dark)) :background "gray34")
+    (((class color) (background light)) :background "gray66"))
   "Current nested block face, depth 9."
   :group 'highlight-blocks-faces)
 
