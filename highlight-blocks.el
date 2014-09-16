@@ -115,6 +115,22 @@ If t, don't limit."
   "Current nested block face, depth 9."
   :group 'highlight-blocks-faces)
 
+;;;###autoload
+(define-minor-mode highlight-blocks-mode
+  "Highlight the nested blocks the point is currently in.
+
+Toggle Highlight Blocks on or off.
+
+With a prefix argument ARG, enable Highlight Blocks mode if ARG is
+positive, and disable it otherwise. If called from Lisp, enable the
+mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
+  :init-value nil
+  :lighter ""
+  :keymap nil
+  (highlight-blocks--mode-off)
+  (when highlight-blocks-mode
+    (highlight-blocks--mode-on)))
+
 (defvar highlight-blocks--timer nil)
 (make-variable-buffer-local 'highlight-blocks--timer)
 
@@ -213,22 +229,6 @@ block."
     (cancel-timer highlight-blocks--timer)
     (setq highlight-blocks--timer nil))
   (highlight-blocks--delete-overlays))
-
-;;;###autoload
-(define-minor-mode highlight-blocks-mode
-  "Highlight the nested blocks the point is currently in.
-
-Toggle Highlight Blocks on or off.
-
-With a prefix argument ARG, enable Highlight Blocks mode if ARG is
-positive, and disable it otherwise. If called from Lisp, enable the
-mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
-  :init-value nil
-  :lighter ""
-  :keymap nil
-  (highlight-blocks--mode-off)
-  (when highlight-blocks-mode
-    (highlight-blocks--mode-on)))
 
 (provide 'highlight-blocks)
 ;;; highlight-blocks.el ends here
