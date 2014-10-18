@@ -147,10 +147,9 @@ innermost blocks will be highlighted; when called with no argument, the value
   (interactive "P")
   (when howmany
     (setq howmany (prefix-numeric-value howmany)))
-  (let ((highlight-blocks-mode t)
-        (highlight-blocks-max-innermost-block-count
+  (let ((highlight-blocks-max-innermost-block-count
          (or howmany highlight-blocks-max-innermost-block-count)))
-    (highlight-blocks--fn))
+    (highlight-blocks--update-selected-window))
   (sit-for highlight-blocks-now-time)
   (highlight-blocks--delete-overlays))
 
@@ -220,17 +219,22 @@ block."
       (scan-error))
     result))
 
+(defun highlight-blocks--update-selected-window ()
+  "Highlight blocks in the selected window."
+  (let ((window (selected-window)))
+    (highlight-blocks--delete-window-overlays window)
+    (let ((i 1))
+      (dolist (bounds (highlight-blocks--get-bounds))
+        (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
+        (setq i (1+ i))))))
+
 (defun highlight-blocks--fn ()
   "Highlight blocks in all windows displaying the current buffer.
 This is the main worker function of `highlight-blocks-mode'."
   (when highlight-blocks-mode
     (dolist (window (get-buffer-window-list nil nil t))
       (with-selected-window window
-        (highlight-blocks--delete-window-overlays window)
-        (let ((i 1))
-          (dolist (bounds (highlight-blocks--get-bounds))
-            (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
-            (setq i (1+ i))))))))
+        (highlight-blocks--update-selected-window)))))
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
