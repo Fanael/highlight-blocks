@@ -140,12 +140,12 @@ different buffers.")
 
 (defun highlight-blocks--delete-window-overlays (window)
   "Delete all used overlays in the WINDOW."
-  (mapc 'delete-overlay (window-parameter window 'highlight-blocks--overlays))
+  (mapc #'delete-overlay (window-parameter window 'highlight-blocks--overlays))
   (set-window-parameter window 'highlight-blocks--overlays nil))
 
 (defun highlight-blocks--delete-overlays ()
   "Delete all used overlays in all windows showing the current buffer."
-  (mapc 'highlight-blocks--delete-window-overlays (get-buffer-window-list nil nil t)))
+  (mapc #'highlight-blocks--delete-window-overlays (get-buffer-window-list nil nil t)))
 
 (defun highlight-blocks--make-overlay (depth beg end window)
   "Make a new overlay.
@@ -220,20 +220,20 @@ block."
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
-  (add-hook 'change-major-mode-hook 'highlight-blocks--mode-off nil t)
-  (add-hook 'kill-buffer-hook 'highlight-blocks--mode-off nil t)
+  (add-hook 'change-major-mode-hook #'highlight-blocks--mode-off nil t)
+  (add-hook 'kill-buffer-hook #'highlight-blocks--mode-off nil t)
   (set (make-local-variable 'highlight-blocks--original-delay) highlight-blocks-delay)
   (let ((timerbucket (gethash highlight-blocks-delay highlight-blocks--timers)))
     (if timerbucket
         (setcar timerbucket (1+ (car timerbucket)))
       (puthash highlight-blocks-delay
-               (cons 1 (run-with-idle-timer highlight-blocks-delay t 'highlight-blocks--fn))
+               (cons 1 (run-with-idle-timer highlight-blocks-delay t #'highlight-blocks--fn))
                highlight-blocks--timers))))
 
 (defun highlight-blocks--mode-off ()
   "Turn off `highlight-blocks-mode'."
-  (remove-hook 'change-major-mode-hook 'highlight-blocks--mode-off t)
-  (remove-hook 'kill-buffer-hook 'highlight-blocks--mode-off t)
+  (remove-hook 'change-major-mode-hook #'highlight-blocks--mode-off t)
+  (remove-hook 'kill-buffer-hook #'highlight-blocks--mode-off t)
   (highlight-blocks--delete-overlays)
   (when (local-variable-p 'highlight-blocks--original-delay)
     (let* ((originaldelay highlight-blocks--original-delay)
