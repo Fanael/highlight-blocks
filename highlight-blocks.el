@@ -228,7 +228,7 @@ block."
         (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
         (setq i (1+ i))))))
 
-(defun highlight-blocks--fn ()
+(defun highlight-blocks--update-current-buffer ()
   "Highlight blocks in all windows displaying the current buffer.
 This is the main worker function of `highlight-blocks-mode'."
   (when highlight-blocks-mode
@@ -245,7 +245,9 @@ This is the main worker function of `highlight-blocks-mode'."
     (if timerbucket
         (setcar timerbucket (1+ (car timerbucket)))
       (puthash highlight-blocks-delay
-               (cons 1 (run-with-idle-timer highlight-blocks-delay t #'highlight-blocks--fn))
+               (cons 1 (run-with-idle-timer highlight-blocks-delay
+                                            t
+                                            #'highlight-blocks--update-current-buffer))
                highlight-blocks--timers))))
 
 (defun highlight-blocks--mode-off ()
