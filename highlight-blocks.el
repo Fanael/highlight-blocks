@@ -177,7 +177,8 @@ buffer, WINDOW is the window to show the overlay in."
 The returned value is a list of conses, where car is the start of a
 block and cdr is the end of a block, starting from the outermost
 block."
-  (let ((result '()))
+  (let ((result '())
+        (parse-sexp-ignore-comments t))
     (condition-case nil
         (let* ((parsestate (syntax-ppss))
                (startingpos (if (or (nth 3 parsestate)
