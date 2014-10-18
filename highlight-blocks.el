@@ -171,20 +171,6 @@ buffer, WINDOW is the window to show the overlay in."
                         highlight-blocks-max-face-count))))
            "-face")))
 
-(defun highlight-blocks--get-block-start (pos)
-  "Get the beginning of the block at POS."
-  (if (and (/= pos (point-min))
-           (= ?\( (char-syntax (char-before pos))))
-      (1- pos)
-    (scan-lists pos -1 1)))
-
-(defun highlight-blocks--get-block-end (pos)
-  "Get the end of the block at POS."
-  (if (and (/= pos (point-max))
-           (= ?\) (char-syntax (char-after pos))))
-      (1+ pos)
-    (scan-lists pos 1 1)))
-
 (defun highlight-blocks--get-bounds ()
   "Get the bounds of the nested blocks the point is in.
 
@@ -203,8 +189,8 @@ block."
                (i 0))
           (while (or (eq highlight-blocks-max-innermost-block-count t)
                      (< i highlight-blocks-max-innermost-block-count))
-            (setq begin (highlight-blocks--get-block-start begin))
-            (setq end (highlight-blocks--get-block-end end))
+            (setq begin (scan-lists begin -1 1))
+            (setq end (scan-lists end 1 1))
             (push (cons begin end) result)
             (setq i (1+ i))))
       (scan-error))
