@@ -32,6 +32,14 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+;;; Commentary:
+;; `highlight-blocks' provides highlighting of the blocks the point is currently
+;; in.
+;;
+;; There are two modes of operation: volatile highlighting
+;; (`highlight-blocks-now') and continuously updated highlighting (the
+;; `highlight-blocks-mode' minor mode).
+
 ;;; Code:
 
 (defgroup highlight-blocks nil
