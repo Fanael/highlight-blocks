@@ -131,8 +131,12 @@ mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
   (when highlight-blocks-mode
     (highlight-blocks--mode-on)))
 
-(defvar highlight-blocks--timer nil)
-(make-variable-buffer-local 'highlight-blocks--timer)
+(defvar highlight-blocks--original-delay nil
+  "Delay used in this buffer.")
+(defvar highlight-blocks--timers (make-hash-table :test #'eql)
+  "Hash table of delay => (refcount . timer).
+The delay is used to ensure it's still possible to use different delays in
+different buffers.")
 
 (defun highlight-blocks--delete-window-overlays (window)
   "Delete all used overlays in the WINDOW."
@@ -218,17 +222,29 @@ block."
   "Turn on `highlight-blocks-mode'."
   (add-hook 'change-major-mode-hook 'highlight-blocks--mode-off nil t)
   (add-hook 'kill-buffer-hook 'highlight-blocks--mode-off nil t)
-  (setq highlight-blocks--timer (run-with-idle-timer
-                                 highlight-blocks-delay t 'highlight-blocks--fn)))
+  (set (make-local-variable 'highlight-blocks--original-delay) highlight-blocks-delay)
+  (let ((timerbucket (gethash highlight-blocks-delay highlight-blocks--timers)))
+    (if timerbucket
+        (setcar timerbucket (1+ (car timerbucket)))
+      (puthash highlight-blocks-delay
+               (cons 1 (run-with-idle-timer highlight-blocks-delay t 'highlight-blocks--fn))
+               highlight-blocks--timers))))
 
 (defun highlight-blocks--mode-off ()
   "Turn off `highlight-blocks-mode'."
   (remove-hook 'change-major-mode-hook 'highlight-blocks--mode-off t)
   (remove-hook 'kill-buffer-hook 'highlight-blocks--mode-off t)
-  (when highlight-blocks--timer
-    (cancel-timer highlight-blocks--timer)
-    (setq highlight-blocks--timer nil))
-  (highlight-blocks--delete-overlays))
+  (highlight-blocks--delete-overlays)
+  (when (local-variable-p 'highlight-blocks--original-delay)
+    (let* ((originaldelay highlight-blocks--original-delay)
+           (timerbucket (gethash originaldelay highlight-blocks--timers)))
+      (when timerbucket
+        (let ((refcount (car timerbucket)))
+          (if (> refcount 1)
+              (setcar timerbucket (1- refcount))
+            (cancel-timer (cdr timerbucket))
+            (remhash originaldelay highlight-blocks--timers)))))
+    (kill-local-variable 'highlight-blocks--original-delay)))
 
 (provide 'highlight-blocks)
 ;;; highlight-blocks.el ends here
