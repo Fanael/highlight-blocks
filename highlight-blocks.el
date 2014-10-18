@@ -198,14 +198,16 @@ block."
     result))
 
 (defun highlight-blocks--fn ()
-  "The main worker function of `highlight-blocks-mode'."
+  "Highlight blocks in all windows displaying the current buffer.
+This is the main worker function of `highlight-blocks-mode'."
   (when highlight-blocks-mode
-    (let ((window (selected-window)))
-      (highlight-blocks--delete-window-overlays window)
-      (let ((i 1))
-        (dolist (bounds (highlight-blocks--get-bounds))
-          (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
-          (setq i (1+ i)))))))
+    (dolist (window (get-buffer-window-list nil nil t))
+      (with-selected-window window
+        (highlight-blocks--delete-window-overlays window)
+        (let ((i 1))
+          (dolist (bounds (highlight-blocks--get-bounds))
+            (highlight-blocks--make-overlay i (car bounds) (cdr bounds) window)
+            (setq i (1+ i))))))))
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
