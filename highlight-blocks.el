@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.8
+;; Version: 0.1.9
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -43,6 +43,12 @@
   "Time in seconds to delay before highlighting blocks.
 If you change this while `highlight-blocks-mode' is active, you must
 toggle the mode off and on again for it to take effect."
+  :type '(number :tag "seconds")
+  :group 'highlight-blocks)
+
+(defcustom highlight-blocks-now-time 10
+  "How long should the blocks be highlighted for, in seconds
+Only the highlighting done by `highlight-blocks-now' is affected."
   :type '(number :tag "seconds")
   :group 'highlight-blocks)
 
@@ -130,6 +136,23 @@ mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
   (highlight-blocks--mode-off)
   (when highlight-blocks-mode
     (highlight-blocks--mode-on)))
+
+;;;###autoload
+(defun highlight-blocks-now (&optional howmany)
+  "Highlight the nested blocks the point is in for `highlight-blocks-now-time'
+seconds, or until input is available.
+When called with an universal argument, its value determines how many of the
+innermost blocks will be highlighted; when called with no argument, the value
+`highlight-blocks-max-innermost-block-count' is used, which see."
+  (interactive "P")
+  (when howmany
+    (setq howmany (prefix-numeric-value howmany)))
+  (let ((highlight-blocks-mode t)
+        (highlight-blocks-max-innermost-block-count
+         (or howmany highlight-blocks-max-innermost-block-count)))
+    (highlight-blocks--fn))
+  (sit-for highlight-blocks-now-time)
+  (highlight-blocks--delete-overlays))
 
 (defvar highlight-blocks--original-delay nil
   "Delay used in this buffer.")
