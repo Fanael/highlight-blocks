@@ -2,7 +2,7 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.5
+;; Version: 0.1.6
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -156,7 +156,9 @@ buffer, WINDOW is the window to show the overlay in."
     (overlay-put overlay 'window window)
     (overlay-put overlay 'priority depth)
     (overlay-put overlay 'face (highlight-blocks--get-face depth))
-    (push overlay (window-parameter nil 'highlight-blocks--overlays))))
+    (set-window-parameter nil 'highlight-blocks--overlays
+                          (cons overlay
+                                (window-parameter nil 'highlight-blocks--overlays)))))
 
 (defun highlight-blocks--get-face (depth)
   "Get the face corresponding to the (1-based) DEPTH."
