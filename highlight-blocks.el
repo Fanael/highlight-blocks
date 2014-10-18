@@ -156,9 +156,9 @@ buffer, WINDOW is the window to show the overlay in."
     (overlay-put overlay 'window window)
     (overlay-put overlay 'priority depth)
     (overlay-put overlay 'face (highlight-blocks--get-face depth))
-    (set-window-parameter nil 'highlight-blocks--overlays
+    (set-window-parameter window 'highlight-blocks--overlays
                           (cons overlay
-                                (window-parameter nil 'highlight-blocks--overlays)))))
+                                (window-parameter window 'highlight-blocks--overlays)))))
 
 (defun highlight-blocks--get-face (depth)
   "Get the face corresponding to the (1-based) DEPTH."
