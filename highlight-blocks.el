@@ -153,13 +153,16 @@ When called with an prefix argument, its value determines how many of the
 innermost blocks will be highlighted; when called with no argument, the value
 `highlight-blocks-max-innermost-block-count' is used, which see."
   (interactive "P")
-  (let ((highlight-blocks-max-innermost-block-count
-         (if howmany
-             (prefix-numeric-value howmany)
-           highlight-blocks-max-innermost-block-count)))
-    (highlight-blocks--update-selected-window))
-  (sit-for highlight-blocks-now-time)
-  (highlight-blocks--delete-overlays))
+  ;; So we don't leave overlays lying around upon `keyboard-quit'.
+  (unwind-protect
+      (progn
+        (let ((highlight-blocks-max-innermost-block-count
+               (if howmany
+                   (prefix-numeric-value howmany)
+                 highlight-blocks-max-innermost-block-count)))
+          (highlight-blocks--update-selected-window))
+        (sit-for highlight-blocks-now-time))
+    (highlight-blocks--delete-overlays)))
 
 (defvar highlight-blocks--original-delay nil
   "Delay used in this buffer.")
