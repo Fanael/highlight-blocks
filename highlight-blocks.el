@@ -149,7 +149,7 @@ mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
 (defun highlight-blocks-now (&optional howmany)
   "Highlight the nested blocks the point is in for `highlight-blocks-now-time'
 seconds, or until input is available.
-When called with an universal argument, its value determines how many of the
+When called with an prefix argument, its value determines how many of the
 innermost blocks will be highlighted; when called with no argument, the value
 `highlight-blocks-max-innermost-block-count' is used, which see."
   (interactive "P")
