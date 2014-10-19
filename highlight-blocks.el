@@ -75,59 +75,19 @@ If t, don't limit."
   :group 'highlight-blocks
   :group 'faces)
 
-(defface highlight-blocks-depth-1-face
-  '((((class color) (background dark)) :background "gray10")
-    (((class color) (background light)) :background "gray90"))
-  "Current nested block face, depth 1."
-  :group 'highlight-blocks-faces)
+(eval-when-compile
+  (defmacro highlight-blocks--define-faces ()
+    (let ((faces '()))
+      (dotimes (i 9)
+        (push `(defface ,(intern (format "highlight-blocks-depth-%d-face" (1+ i)))
+                 '((((class color) (background dark)) :background ,(format "gray%d" (+ 10 (* i 3))))
+                   (((class color) (background light)) :background ,(format "gray%d" (- 90 (* i 3)))))
+                 ,(format "Current nested block face, depth %d." (1+ i))
+                 :group 'highlight-blocks-faces)
+              faces))
+      `(progn ,@faces))))
 
-(defface highlight-blocks-depth-2-face
-  '((((class color) (background dark)) :background "gray13")
-    (((class color) (background light)) :background "gray87"))
-  "Current nested block face, depth 2."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-3-face
-  '((((class color) (background dark)) :background "gray16")
-    (((class color) (background light)) :background "gray84"))
-  "Current nested block face, depth 3."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-4-face
-  '((((class color) (background dark)) :background "gray19")
-    (((class color) (background light)) :background "gray81"))
-  "Current nested block face, depth 4."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-5-face
-  '((((class color) (background dark)) :background "gray22")
-    (((class color) (background light)) :background "gray78"))
-  "Current nested block face, depth 5."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-6-face
-  '((((class color) (background dark)) :background "gray25")
-    (((class color) (background light)) :background "gray75"))
-  "Current nested block face, depth 6."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-7-face
-  '((((class color) (background dark)) :background "gray28")
-    (((class color) (background light)) :background "gray72"))
-  "Current nested block face, depth 7."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-8-face
-  '((((class color) (background dark)) :background "gray31")
-    (((class color) (background light)) :background "gray69"))
-  "Current nested block face, depth 8."
-  :group 'highlight-blocks-faces)
-
-(defface highlight-blocks-depth-9-face
-  '((((class color) (background dark)) :background "gray34")
-    (((class color) (background light)) :background "gray66"))
-  "Current nested block face, depth 9."
-  :group 'highlight-blocks-faces)
+(highlight-blocks--define-faces)
 
 ;;;###autoload
 (define-minor-mode highlight-blocks-mode
