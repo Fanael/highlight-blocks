@@ -127,9 +127,9 @@ innermost blocks will be highlighted; when called with no argument, the value
 (defvar highlight-blocks--original-delay nil
   "Delay used in this buffer.")
 (defvar highlight-blocks--timers (make-hash-table :test #'eql)
-  "Hash table of delay => (refcount timer . function).
-The delay is used to ensure it's still possible to use different delays in
-different buffers.")
+  "Hash table of delay => (timer . function).
+The delay is used to ensure it's possible to use different delays in different
+buffers.")
 
 (defun highlight-blocks--delete-window-overlays (window)
   "Delete all used overlays in the WINDOW."
@@ -224,7 +224,9 @@ can't distinguish them."
 
 When OPERATION is nil, update the block highlighting in the current buffer; when
 it's `register', add the current buffer to the internal buffer list; when it's
-`unregister', delete the current buffer from the internal buffer list."
+`unregister', delete the current buffer from the internal buffer list and return
+`last' if this was the last buffer, nil otherwise.
+The returned value should be ignored in any other case."
       (let ((buffer (current-buffer)))
         (pcase operation
           (`nil
@@ -233,7 +235,9 @@ it's `register', add the current buffer to the internal buffer list; when it's
           (`register
            (puthash buffer t buffers))
           (`unregister
-           (remhash buffer buffers)))))))
+           (remhash buffer buffers)
+           (when (= 0 (hash-table-count buffers))
+             'last)))))))
 
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
@@ -242,13 +246,11 @@ it's `register', add the current buffer to the internal buffer list; when it's
   (set (make-local-variable 'highlight-blocks--original-delay) highlight-blocks-delay)
   (let ((timerbucket (gethash highlight-blocks-delay highlight-blocks--timers)))
     (if timerbucket
-        (progn
-          (setcar timerbucket (1+ (car timerbucket)))
-          (funcall (cddr timerbucket) 'register))
+        (funcall (cdr timerbucket) 'register)
       (let ((timerfn (highlight-blocks--generate-timer-function)))
         (funcall timerfn 'register)
         (puthash highlight-blocks-delay
-                 `(1 ,(run-with-idle-timer highlight-blocks-delay t timerfn) . ,timerfn)
+                 `(,(run-with-idle-timer highlight-blocks-delay t timerfn) . ,timerfn)
                  highlight-blocks--timers)))))
 
 (defun highlight-blocks--mode-off ()
@@ -259,13 +261,10 @@ it's `register', add the current buffer to the internal buffer list; when it's
   (when (local-variable-p 'highlight-blocks--original-delay)
     (let* ((originaldelay highlight-blocks--original-delay)
            (timerbucket (gethash originaldelay highlight-blocks--timers)))
-      (when timerbucket
-        (funcall (cddr timerbucket) 'unregister)
-        (let ((refcount (car timerbucket)))
-          (if (> refcount 1)
-              (setcar timerbucket (1- refcount))
-            (cancel-timer (cadr timerbucket))
-            (remhash originaldelay highlight-blocks--timers)))))
+      (when (and timerbucket
+                 (eq 'last (funcall (cdr timerbucket) 'unregister)))
+        (cancel-timer (car timerbucket))
+        (remhash originaldelay highlight-blocks--timers)))
     (kill-local-variable 'highlight-blocks--original-delay)))
 
 (provide 'highlight-blocks)
