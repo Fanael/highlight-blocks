@@ -127,7 +127,7 @@ innermost blocks will be highlighted; when called with no argument, the value
 (defvar highlight-blocks--original-delay nil
   "Delay used in this buffer.")
 (defvar highlight-blocks--timers (make-hash-table :test #'eql)
-  "Hash table of delay => (refcount . timer).
+  "Hash table of delay => (refcount timer . function).
 The delay is used to ensure it's still possible to use different delays in
 different buffers.")
 
@@ -207,6 +207,34 @@ This is the main worker function of `highlight-blocks-mode'."
       (with-selected-window window
         (highlight-blocks--update-selected-window)))))
 
+(defun highlight-blocks--generate-timer-function ()
+  "Generate a timer function.
+
+Normally, there's one timer function for every value of `highlight-blocks-delay'
+used.
+Timer functions only update the buffers registered with them; this is to make
+sure that a buffer with `highlight-blocks-delay' set to a delay is always
+updated after that delay, and not before that due to another buffer having
+`highlight-blocks-mode' set up with a smaller delay and the current buffer
+happens to be the former one: `highlight-blocks--update-current-buffer' alone
+can't distinguish them."
+  (let ((buffers (make-hash-table :test #'eq)))
+    (lambda (&optional operation)
+      "The timer function.
+
+When OPERATION is nil, update the block highlighting in the current buffer; when
+it's `register', add the current buffer to the internal buffer list; when it's
+`unregister', delete the current buffer from the internal buffer list."
+      (let ((buffer (current-buffer)))
+        (pcase operation
+          (`nil
+           (when (gethash buffer buffers)
+             (highlight-blocks--update-current-buffer)))
+          (`register
+           (puthash buffer t buffers))
+          (`unregister
+           (remhash buffer buffers)))))))
+
 (defun highlight-blocks--mode-on ()
   "Turn on `highlight-blocks-mode'."
   (add-hook 'change-major-mode-hook #'highlight-blocks--mode-off nil t)
@@ -214,12 +242,14 @@ This is the main worker function of `highlight-blocks-mode'."
   (set (make-local-variable 'highlight-blocks--original-delay) highlight-blocks-delay)
   (let ((timerbucket (gethash highlight-blocks-delay highlight-blocks--timers)))
     (if timerbucket
-        (setcar timerbucket (1+ (car timerbucket)))
-      (puthash highlight-blocks-delay
-               (cons 1 (run-with-idle-timer highlight-blocks-delay
-                                            t
-                                            #'highlight-blocks--update-current-buffer))
-               highlight-blocks--timers))))
+        (progn
+          (setcar timerbucket (1+ (car timerbucket)))
+          (funcall (cddr timerbucket) 'register))
+      (let ((timerfn (highlight-blocks--generate-timer-function)))
+        (funcall timerfn 'register)
+        (puthash highlight-blocks-delay
+                 `(1 ,(run-with-idle-timer highlight-blocks-delay t timerfn) . ,timerfn)
+                 highlight-blocks--timers)))))
 
 (defun highlight-blocks--mode-off ()
   "Turn off `highlight-blocks-mode'."
@@ -230,10 +260,11 @@ This is the main worker function of `highlight-blocks-mode'."
     (let* ((originaldelay highlight-blocks--original-delay)
            (timerbucket (gethash originaldelay highlight-blocks--timers)))
       (when timerbucket
+        (funcall (cddr timerbucket) 'unregister)
         (let ((refcount (car timerbucket)))
           (if (> refcount 1)
               (setcar timerbucket (1- refcount))
-            (cancel-timer (cdr timerbucket))
+            (cancel-timer (cadr timerbucket))
             (remhash originaldelay highlight-blocks--timers)))))
     (kill-local-variable 'highlight-blocks--original-delay)))
 
