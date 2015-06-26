@@ -147,7 +147,10 @@ DEPTH controls the face and priority, BEG and END are the positions in
 buffer, WINDOW is the window to show the overlay in."
   (let ((overlay (make-overlay beg end)))
     (overlay-put overlay 'window window)
-    (overlay-put overlay 'priority depth)
+    ;; Ugly, terrible hack: negative priorities have undefined behavior!
+    ;; Alas, this is the only way I'm aware of to not let highlighted block
+    ;; overlays override region highlighting.
+    (overlay-put overlay 'priority (- depth 1000))
     (overlay-put overlay 'face (highlight-blocks--get-face depth))
     (set-window-parameter window 'highlight-blocks--overlays
                           (cons overlay
