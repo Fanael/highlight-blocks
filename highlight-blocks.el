@@ -2,12 +2,12 @@
 
 ;; Author: Fanael Linithien <fanael4@gmail.com>
 ;; URL: https://github.com/Fanael/highlight-blocks
-;; Version: 0.1.15
+;; Version: 0.1.16
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
 
-;; Copyright (c) 2014, Fanael Linithien
+;; Copyright (c) 2014-2015, Fanael Linithien
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -174,9 +174,9 @@ block."
     (condition-case nil
         (let* ((parse-state (syntax-ppss))
                (starting-pos (if (or (nth 3 parse-state)
-                                    (nth 4 parse-state))
-                                (nth 8 parse-state)
-                              (point)))
+                                     (nth 4 parse-state))
+                                 (nth 8 parse-state)
+                               (point)))
                (begins (nreverse (nth 9 parse-state)))
                (end starting-pos)
                (i 0))
