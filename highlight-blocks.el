@@ -106,7 +106,7 @@ mode if ARG is omitted or nil, and toggle it if ARG is `toggle'."
     (highlight-blocks--mode-on)))
 
 ;;;###autoload
-(defun highlight-blocks-now (&optional howmany)
+(defun highlight-blocks-now (&optional how-many)
   "Highlight the nested blocks the point is in for `highlight-blocks-now-time'
 seconds, or until input is available.
 When called with an prefix argument, its value determines how many of the
@@ -117,8 +117,8 @@ innermost blocks will be highlighted; when called with no argument, the value
   (unwind-protect
       (progn
         (let ((highlight-blocks-max-innermost-block-count
-               (if howmany
-                   (prefix-numeric-value howmany)
+               (if how-many
+                   (prefix-numeric-value how-many)
                  highlight-blocks-max-innermost-block-count)))
           (highlight-blocks--update-selected-window))
         (sit-for highlight-blocks-now-time))
@@ -172,13 +172,13 @@ block."
   (let ((result '())
         (parse-sexp-ignore-comments t))
     (condition-case nil
-        (let* ((parsestate (syntax-ppss))
-               (startingpos (if (or (nth 3 parsestate)
-                                    (nth 4 parsestate))
-                                (nth 8 parsestate)
+        (let* ((parse-state (syntax-ppss))
+               (starting-pos (if (or (nth 3 parse-state)
+                                    (nth 4 parse-state))
+                                (nth 8 parse-state)
                               (point)))
-               (begins (nreverse (nth 9 parsestate)))
-               (end startingpos)
+               (begins (nreverse (nth 9 parse-state)))
+               (end starting-pos)
                (i 0))
           (while (or (eq highlight-blocks-max-innermost-block-count t)
                      (< i highlight-blocks-max-innermost-block-count))
@@ -242,13 +242,13 @@ The returned value should be ignored in any other case."
   (add-hook 'change-major-mode-hook #'highlight-blocks--mode-off nil t)
   (add-hook 'kill-buffer-hook #'highlight-blocks--mode-off nil t)
   (set (make-local-variable 'highlight-blocks--original-delay) highlight-blocks-delay)
-  (let ((timerbucket (gethash highlight-blocks-delay highlight-blocks--timers)))
-    (if timerbucket
-        (funcall (cdr timerbucket) 'register)
-      (let ((timerfn (highlight-blocks--generate-timer-function)))
-        (funcall timerfn 'register)
+  (let ((timer-bucket (gethash highlight-blocks-delay highlight-blocks--timers)))
+    (if timer-bucket
+        (funcall (cdr timer-bucket) 'register)
+      (let ((timer-fn (highlight-blocks--generate-timer-function)))
+        (funcall timer-fn 'register)
         (puthash highlight-blocks-delay
-                 `(,(run-with-idle-timer highlight-blocks-delay t timerfn) . ,timerfn)
+                 `(,(run-with-idle-timer highlight-blocks-delay t timer-fn) . ,timer-fn)
                  highlight-blocks--timers)))))
 
 (defun highlight-blocks--mode-off ()
@@ -257,12 +257,12 @@ The returned value should be ignored in any other case."
   (remove-hook 'kill-buffer-hook #'highlight-blocks--mode-off t)
   (highlight-blocks--delete-overlays)
   (when (local-variable-p 'highlight-blocks--original-delay)
-    (let* ((originaldelay highlight-blocks--original-delay)
-           (timerbucket (gethash originaldelay highlight-blocks--timers)))
-      (when (and timerbucket
-                 (eq 'last (funcall (cdr timerbucket) 'unregister)))
-        (cancel-timer (car timerbucket))
-        (remhash originaldelay highlight-blocks--timers)))
+    (let* ((original-delay highlight-blocks--original-delay)
+           (timer-bucket (gethash original-delay highlight-blocks--timers)))
+      (when (and timer-bucket
+                 (eq 'last (funcall (cdr timer-bucket) 'unregister)))
+        (cancel-timer (car timer-bucket))
+        (remhash original-delay highlight-blocks--timers)))
     (kill-local-variable 'highlight-blocks--original-delay)))
 
 (provide 'highlight-blocks)
