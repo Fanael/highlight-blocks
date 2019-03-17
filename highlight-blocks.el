@@ -145,12 +145,13 @@ buffers.")
 
 DEPTH controls the face, BEG and END are the positions in buffer,
 WINDOW is the window to show the overlay in."
-  (let ((overlay (make-overlay beg end)))
-    (overlay-put overlay 'window window)
-    (overlay-put overlay 'face (highlight-blocks--get-face depth))
-    (set-window-parameter window 'highlight-blocks--overlays
-                          (cons overlay
-                                (window-parameter window 'highlight-blocks--overlays)))))
+  (when (and beg end)
+    (let ((overlay (make-overlay beg end)))
+      (overlay-put overlay 'window window)
+      (overlay-put overlay 'face (highlight-blocks--get-face depth))
+      (set-window-parameter window 'highlight-blocks--overlays
+                            (cons overlay
+                                  (window-parameter window 'highlight-blocks--overlays))))))
 
 (defun highlight-blocks--get-face (depth)
   "Get the face corresponding to the (1-based) DEPTH."
